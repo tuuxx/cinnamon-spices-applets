@@ -1,3 +1,13 @@
+### 1.1.7
+- Thanks to serkan-master for the turkish translation, to ViniciusQueirozVQ
+  for the portuguese/brazilian translation, and to FabienRCT for his work
+  on the french translation
+- Support for Spanish holidays including regional data
+
+### 1.1.6
+- Thanks to bossbob88 for the hungarian translation
+- Support for Belarus holidays
+
 ### 1.1.5
 - Thanks to Alan01 for the danish translation, and to eson57 for the swedish translation.
 - Bugfix: align world clock times correctly

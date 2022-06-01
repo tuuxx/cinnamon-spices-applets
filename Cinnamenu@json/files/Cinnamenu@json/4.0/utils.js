@@ -17,7 +17,7 @@ function _(str) {
     return Gettext.dgettext('Cinnamenu@json', str);
 }
 
-const wordWrap = text => text.match( /.{1,80}(\s|$|-|=|\+)|\S+?(\s|$|-|=|\+)/g ).join('\n');
+const wordWrap = text => text.match( /.{1,80}(\s|$|-|=|\+|_|&|\\)|\S+?(\s|$|-|=|\+|_|&|\\)/g ).join('\n');
 
 //===========================================================
 
@@ -28,8 +28,8 @@ const getThumbnail_gicon = (uri, mimeType) => {
         return null;
     }
     //
-    const isImage = mimeType === 'image/jpeg' || mimeType === 'image/png' || mimeType === 'image/svg+xml' ||
-                            mimeType === 'image/tiff' || mimeType === 'image/bmp' || mimeType === 'image/gif';
+    const isImage = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/tiff', 'image/bmp',
+                                                                'image/gif'].includes(mimeType);
     const fileSize = file.query_info('standard::size', Gio.FileQueryInfoFlags.NONE, null).get_size();
 
     //----Get thumbnail from cache
@@ -80,7 +80,8 @@ const hideTooltipIfVisible = () => {
 };
 
 class NewTooltip {
-    constructor(actor, xpos, ypos, center_x, text) {
+    constructor(actor, xpos, ypos, center_x /*boolean*/, text) {
+        //if center_x then tooltip should be centered on xpos
         this.actor = actor;
         this.xpos = xpos;
         this.ypos = ypos;
@@ -131,11 +132,11 @@ class NewTooltip {
 
 //===================================================
 
-const searchStr = (q, str, quick = false) => {
+const searchStr = (q, str, noFuzzySearch = false, noSubStringSearch = false) => {
     if (!str) {
         return { score: 0, result: str };
     }
-    
+
     const HIGHTLIGHT_MATCH = true;
     let foundPosition = 0;
     let foundLength = 0;
@@ -147,11 +148,11 @@ const searchStr = (q, str, quick = false) => {
         foundPosition = str2.indexOf(q);
         score = (foundPosition === 0) ? 1.21 : 1.2;//slightly higher score if from beginning
         foundLength = q.length;
-    } else if (str2.indexOf(q) !== -1) { //else match substring
+    } else if (!noSubStringSearch && str2.indexOf(q) !== -1) { //else match substring
         score = 1.1;
         foundPosition = str2.indexOf(q);
         foundLength = q.length;
-    } else if (!quick){ //else fuzzy match
+    } else if (!noFuzzySearch){ //else fuzzy match
         //find longest substring of str2 made up of letters from q
         const found = str2.match(new RegExp('[' + q + ']+','g'));
         let length = 0;
@@ -181,6 +182,7 @@ const searchStr = (q, str, quick = false) => {
 
             foundPosition = str2.indexOf(longest);
             foundLength = longest.length;
+            //return a fuzzy match score of between 0 and 1.
             score = Math.min(longest.length / q.length, 1.0) * bigrams_score;
         }
     }
